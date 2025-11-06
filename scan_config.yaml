@@ -1,0 +1,63 @@
+model:
+  path: null  # Set path to model checkpoint
+  ruleset: gpt_like  # Options: gpt_like, llama_like, mistral_like, phi_like
+  include: ["transformer.*"]  # Include patterns (empty = all)
+  exclude: []  # Exclude patterns
+
+svd:
+  enabled: true
+  rank: 96
+  power_iters: 2
+  use_cuda: true  # Use CUDA if available
+
+interlayer:
+  enabled: true
+  spectral_hist_bins: 64
+
+distribution:
+  enabled: true
+
+robust:
+  enabled: true
+
+energy:
+  enabled: true
+
+rmt:
+  enabled: true
+
+spectrogram:
+  enabled: true
+  window: [16, 16]
+  stride: [16, 16]
+  method: stft
+
+gsp:
+  enabled: true
+  embed_dim: 16
+
+tda:
+  enabled: true
+
+sequence_cp:
+  enabled: true
+
+ot:
+  enabled: true
+
+multiview:
+  enabled: false  # Default disabled in v1.0
+
+conformal:
+  enabled: true
+  coverage: 0.95
+
+output:
+  dir: ./scan_out
+  save_visuals: true
+  topk_visuals: 20
+
+device:
+  use_cuda: true  # Use CUDA if available
+  cuda_device: 0  # CUDA device index
+
