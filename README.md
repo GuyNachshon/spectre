@@ -39,9 +39,16 @@ uv sync
 
 ### Basic Usage
 
+You can run Spectre in several ways:
+
+#### Option 1: Using uv (Recommended)
+
 ```bash
 # Run scan with default configuration
 uv run spectre/cli.py --model /path/to/model.safetensors
+
+# Or use the entry point (after installation)
+uv run spectre --model /path/to/model.safetensors
 
 # Use custom configuration
 uv run spectre/cli.py --config scan_config.yaml --model /path/to/model.safetensors
@@ -54,6 +61,39 @@ uv run spectre/cli.py --model /path/to/model.safetensors --ruleset llama_like
 
 # Skip visualizations
 uv run spectre/cli.py --model /path/to/model.safetensors --no-visuals
+```
+
+#### Option 2: Using Python directly
+
+```bash
+# After installing dependencies
+python -m spectre.cli --model /path/to/model.safetensors
+
+# Or directly
+python spectre/cli.py --model /path/to/model.safetensors
+```
+
+#### Option 3: Programmatic Usage
+
+```python
+from pathlib import Path
+from spectre.core.config import Config
+from spectre.core.pipeline import Pipeline
+from spectre.core.output import generate_all_outputs
+
+# Create configuration
+config = Config()
+config.set("model.path", "/path/to/model.safetensors")
+config.set("model.ruleset", "gpt_like")
+config.set("output.dir", "./scan_out")
+
+# Run pipeline
+pipeline = Pipeline(config)
+results = pipeline.run()
+
+# Results are automatically saved, but you can also access them programmatically
+print(f"Total tensors: {len(pipeline.feature_store.features)}")
+print(f"Ensemble sigma: {pipeline.scorer.get_summary()['ensemble_sigma']}")
 ```
 
 ### Configuration

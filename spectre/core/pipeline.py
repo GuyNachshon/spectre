@@ -151,11 +151,17 @@ class Pipeline:
         include_patterns = self.config.get("model.include", [])
         exclude_patterns = self.config.get("model.exclude", [])
         
+        total_loaded = 0
+        total_filtered = 0
+        
         for name, array in tqdm(load_checkpoint(checkpoint_path), desc="Loading tensors"):
+            total_loaded += 1
             # Filter by include/exclude patterns
             if include_patterns and not any(pattern in name for pattern in include_patterns):
+                total_filtered += 1
                 continue
             if exclude_patterns and any(pattern in name for pattern in exclude_patterns):
+                total_filtered += 1
                 continue
             
             # Map to role
@@ -170,6 +176,7 @@ class Pipeline:
                 "shape": array.shape,
             })
         
+        print(f"Loaded {total_loaded} tensors, filtered {total_filtered}, processing {len(tensors)}")
         return tensors
     
     def _extract_features(self, tensors: List[Dict]):
