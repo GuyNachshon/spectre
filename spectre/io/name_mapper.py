@@ -3,7 +3,7 @@
 import re
 from enum import Enum
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional, Tuple, Union
 
 import yaml
 
@@ -25,17 +25,20 @@ class ParameterRole(Enum):
 class NameMapper:
     """Maps parameter names to roles based on rulesets."""
     
-    def __init__(self, ruleset: Optional[Dict] = None, ruleset_path: Optional[Path] = None):
+    def __init__(self, ruleset: Optional[Union[Dict, str]] = None, ruleset_path: Optional[Path] = None):
         """
         Initialize name mapper with ruleset.
         
         Args:
-            ruleset: Dictionary with ruleset configuration
+            ruleset: Dictionary with ruleset configuration, or string name (e.g., "gpt_like")
             ruleset_path: Path to YAML ruleset file
         """
         if ruleset_path:
             with open(ruleset_path, "r") as f:
                 self.ruleset = yaml.safe_load(f)
+        elif isinstance(ruleset, str):
+            # If ruleset is a string, get the predefined ruleset
+            self.ruleset = get_ruleset(ruleset)
         elif ruleset:
             self.ruleset = ruleset
         else:
