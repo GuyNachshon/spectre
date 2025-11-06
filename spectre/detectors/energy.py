@@ -54,6 +54,7 @@ class EnergyDetector:
             features["energy.frobenius"] = float(frobenius_norm)
         else:
             # For 1D arrays, Frobenius norm is the same as L2 norm
+            frobenius_norm = l2_norm
             features["energy.frobenius"] = float(l2_norm)
         
         # Normalized norms (per element)

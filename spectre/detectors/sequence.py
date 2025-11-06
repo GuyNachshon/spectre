@@ -117,10 +117,16 @@ class SequenceDetector:
     def _compute_stable_rank(self, array: np.ndarray) -> float:
         """Compute stable rank of array."""
         if array.ndim < 2:
-            return 0.0
+            # For 1D arrays, stable rank is 1.0 (single "singular value")
+            return 1.0
         try:
             if array.ndim > 2:
                 array = array.reshape(array.shape[0], -1)
+            
+            # Check minimum dimensions
+            if min(array.shape) < 2:
+                return 1.0
+            
             _, s, _ = np.linalg.svd(array, full_matrices=False)
             if len(s) > 0 and s[0] > 0:
                 return float(np.sum(s ** 2) / (s[0] ** 2))
