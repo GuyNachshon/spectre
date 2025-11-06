@@ -1,5 +1,10 @@
 """D11: Sequence Change-Point & Matrix-Profile detector."""
 
+import os
+# Disable CUDA for stumpy to avoid version conflicts
+# Must be set before any numba/cuda imports
+os.environ["NUMBA_DISABLE_CUDA"] = "1"
+
 from typing import Dict, List, Optional
 
 import numpy as np
@@ -7,8 +12,11 @@ import numpy as np
 try:
     import stumpy
     STUMPY_AVAILABLE = True
-except ImportError:
+except (ImportError, Exception) as e:
+    # Handle both import errors and CUDA compilation errors
     STUMPY_AVAILABLE = False
+    # Silently disable if CUDA error or import error
+    pass
 
 from scipy import stats
 from scipy.signal import find_peaks
