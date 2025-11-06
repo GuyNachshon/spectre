@@ -1,8 +1,8 @@
 model:
   path: null  # Set path to model checkpoint
   ruleset: gpt_like  # Options: gpt_like, llama_like, mistral_like, phi_like
-  include: ["transformer.*"]  # Include patterns (empty = all)
-  exclude: []  # Exclude patterns
+  include: []  # Include patterns (empty = all, use regex or substring)
+  exclude: []  # Exclude patterns (use regex or substring)
 
 svd:
   enabled: true

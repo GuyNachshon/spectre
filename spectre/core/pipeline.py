@@ -156,13 +156,47 @@ class Pipeline:
         
         for name, array in tqdm(load_checkpoint(checkpoint_path), desc="Loading tensors"):
             total_loaded += 1
+            
             # Filter by include/exclude patterns
-            if include_patterns and not any(pattern in name for pattern in include_patterns):
-                total_filtered += 1
-                continue
-            if exclude_patterns and any(pattern in name for pattern in exclude_patterns):
-                total_filtered += 1
-                continue
+            # If include_patterns is empty or None, include all
+            # If include_patterns has patterns, check if any match
+            if include_patterns:
+                # Support both substring matching and regex patterns
+                import re
+                matched = False
+                for pattern in include_patterns:
+                    # Try as regex first, fallback to substring
+                    try:
+                        if re.search(pattern, name):
+                            matched = True
+                            break
+                    except re.error:
+                        # Not a valid regex, use substring matching
+                        if pattern in name:
+                            matched = True
+                            break
+                
+                if not matched:
+                    total_filtered += 1
+                    continue
+            
+            # Exclude patterns
+            if exclude_patterns:
+                import re
+                excluded = False
+                for pattern in exclude_patterns:
+                    try:
+                        if re.search(pattern, name):
+                            excluded = True
+                            break
+                    except re.error:
+                        if pattern in name:
+                            excluded = True
+                            break
+                
+                if excluded:
+                    total_filtered += 1
+                    continue
             
             # Map to role
             layer_idx = self.name_mapper.get_layer_index(name)

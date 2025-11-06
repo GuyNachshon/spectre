@@ -33,7 +33,7 @@ class Config:
             "model": {
                 "path": None,
                 "ruleset": "gpt_like",
-                "include": ["transformer.*"],
+                "include": [],  # Empty = include all
                 "exclude": [],
             },
             "svd": {
