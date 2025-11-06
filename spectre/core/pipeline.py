@@ -57,32 +57,42 @@ class Pipeline:
         detectors = {}
         
         # Import detectors lazily to avoid circular imports
+        # Map config name -> (module_path, class_name)
         detector_modules = {
-            "spectral": "spectre.detectors.spectral",
-            "interlayer": "spectre.detectors.interlayer",
-            "distribution": "spectre.detectors.distribution",
-            "robust": "spectre.detectors.robust",
-            "energy": "spectre.detectors.energy",
-            "layer_graph": "spectre.detectors.layer_graph",
-            "rmt": "spectre.detectors.rmt",
-            "spectrogram": "spectre.detectors.spectrogram",
-            "gsp": "spectre.detectors.gsp",
-            "tda": "spectre.detectors.tda",
-            "sequence_cp": "spectre.detectors.sequence",
-            "ot": "spectre.detectors.ot",
-            "multiview": "spectre.detectors.multiview",
+            "svd": ("spectre.detectors.spectral", "SpectralDetector"),
+            "spectral": ("spectre.detectors.spectral", "SpectralDetector"),
+            "interlayer": ("spectre.detectors.interlayer", "InterlayerDetector"),
+            "distribution": ("spectre.detectors.distribution", "DistributionDetector"),
+            "robust": ("spectre.detectors.robust", "RobustDetector"),
+            "energy": ("spectre.detectors.energy", "EnergyDetector"),
+            "layer_graph": ("spectre.detectors.layer_graph", "LayerGraphDetector"),
+            "rmt": ("spectre.detectors.rmt", "RmtDetector"),
+            "spectrogram": ("spectre.detectors.spectrogram", "SpectrogramDetector"),
+            "gsp": ("spectre.detectors.gsp", "GspDetector"),
+            "tda": ("spectre.detectors.tda", "TdaDetector"),
+            "sequence_cp": ("spectre.detectors.sequence", "SequenceDetector"),
+            "ot": ("spectre.detectors.ot", "OtDetector"),
+            "multiview": ("spectre.detectors.multiview", "MultiviewDetector"),
         }
         
-        for name, module_path in detector_modules.items():
-            if self.config.is_enabled(name):
+        for name, (module_path, class_name) in detector_modules.items():
+            # Check both the config name and aliases
+            if self.config.is_enabled(name) or (name == "svd" and self.config.is_enabled("spectral")):
                 try:
-                    module = __import__(module_path, fromlist=[name.title()])
-                    detector_class = getattr(module, name.title() + "Detector", None)
+                    module = __import__(module_path, fromlist=[class_name])
+                    detector_class = getattr(module, class_name, None)
                     if detector_class:
-                        detectors[name] = detector_class(self.config)
-                except (ImportError, AttributeError):
-                    # Detector not yet implemented, skip
+                        # Use "spectral" as the key for both "svd" and "spectral"
+                        key = "spectral" if name == "svd" else name
+                        detectors[key] = detector_class(self.config)
+                        print(f"✓ Loaded detector: {key} ({class_name})")
+                except (ImportError, AttributeError) as e:
+                    # Log error for debugging
+                    print(f"Warning: Failed to load detector {name} ({class_name}): {e}")
                     pass
+        
+        if not detectors:
+            print("Warning: No detectors were loaded! Check your configuration.")
         
         return detectors
     
@@ -169,6 +179,11 @@ class Pipeline:
         Args:
             tensors: List of tensor dictionaries
         """
+        if not tensors:
+            print("Warning: No tensors to process")
+            return
+        
+        print(f"Processing {len(tensors)} tensors with {len(self.detectors)} detectors")
         for tensor_dict in tqdm(tensors, desc="Extracting features"):
             name = tensor_dict["name"]
             array = tensor_dict["array"]
@@ -193,7 +208,11 @@ class Pipeline:
                 except Exception as e:
                     # Log error but continue
                     print(f"Warning: Detector {detector_name} failed for {name}: {e}")
+                    import traceback
+                    traceback.print_exc()
             
+            # Always add tensor features, even if no features were extracted
+            # This ensures we have a record of all tensors
             self.feature_store.add(tf)
     
     def _score_features(self):

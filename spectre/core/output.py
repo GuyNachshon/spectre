@@ -65,7 +65,11 @@ def generate_features_csv(
         writer = csv.writer(f)
         
         # Header
-        header = ["name", "role", "layer_idx", "shape"] + all_feature_names
+        if all_feature_names:
+            header = ["name", "role", "layer_idx", "shape"] + all_feature_names
+        else:
+            # If no features, just write basic info
+            header = ["name", "role", "layer_idx", "shape"]
         writer.writerow(header)
         
         # Rows
@@ -76,7 +80,8 @@ def generate_features_csv(
                 tf.layer_idx if tf.layer_idx is not None else "",
                 str(tf.shape),
             ]
-            row.extend([tf.features.get(fn, "") for fn in all_feature_names])
+            if all_feature_names:
+                row.extend([tf.features.get(fn, "") for fn in all_feature_names])
             writer.writerow(row)
     
     return csv_path
