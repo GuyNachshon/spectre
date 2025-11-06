@@ -4,6 +4,12 @@ import argparse
 import sys
 from pathlib import Path
 
+# Add parent directory to path if running as script
+if __name__ == "__main__" and __file__:
+    script_dir = Path(__file__).parent.parent
+    if str(script_dir) not in sys.path:
+        sys.path.insert(0, str(script_dir))
+
 from spectre.core.config import Config
 from spectre.core.output import generate_all_outputs
 from spectre.core.pipeline import Pipeline

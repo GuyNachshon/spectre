@@ -43,37 +43,43 @@ You can run Spectre in several ways:
 
 #### Option 1: Using uv (Recommended)
 
-```bash
-# Run scan with default configuration
-uv run spectre/cli.py --model /path/to/model.safetensors
+First, install the package in editable mode:
 
-# Or use the entry point (after installation)
+```bash
+# Install package in editable mode
+uv pip install -e .
+
+# Then run the CLI
 uv run spectre --model /path/to/model.safetensors
 
-# Use custom configuration
-uv run spectre/cli.py --config scan_config.yaml --model /path/to/model.safetensors
-
-# Specify output directory
-uv run spectre/cli.py --model /path/to/model.safetensors --output ./results
-
-# Use specific ruleset
-uv run spectre/cli.py --model /path/to/model.safetensors --ruleset llama_like
-
-# Skip visualizations
-uv run spectre/cli.py --model /path/to/model.safetensors --no-visuals
+# Or use as a module
+uv run python -m spectre.cli --model /path/to/model.safetensors
 ```
 
 #### Option 2: Using Python directly
 
 ```bash
-# After installing dependencies
+# Install in editable mode first
+pip install -e .
+
+# Then run
 python -m spectre.cli --model /path/to/model.safetensors
 
-# Or directly
-python spectre/cli.py --model /path/to/model.safetensors
+# Or use the entry point
+spectre --model /path/to/model.safetensors
 ```
 
-#### Option 3: Programmatic Usage
+#### Option 3: Run script directly (no installation needed)
+
+```bash
+# Run the CLI script directly (adds path automatically)
+python spectre/cli.py --model /path/to/model.safetensors
+
+# Or with uv
+uv run python spectre/cli.py --model /path/to/model.safetensors
+```
+
+#### Option 4: Programmatic Usage
 
 ```python
 from pathlib import Path
