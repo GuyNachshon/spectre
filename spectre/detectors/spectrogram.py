@@ -108,15 +108,16 @@ class SpectrogramDetector:
             # Compute local contrast using gradient
             grad_x = np.gradient(spectrogram, axis=1)
             grad_y = np.gradient(spectrogram, axis=0)
-            contrast = np.sqrt(grad_x ** 2 + grad_y ** 2)
+            contrast = np.sqrt(np.real(grad_x) ** 2 + np.real(grad_y) ** 2)
             features["spectrogram.contrast_mean"] = float(np.mean(contrast))
             features["spectrogram.contrast_std"] = float(np.std(contrast))
             
             # Energy distribution
-            total_energy = np.sum(spectrogram ** 2)
+            spectrogram_real = np.real(spectrogram)
+            total_energy = np.sum(spectrogram_real ** 2)
             if total_energy > 0:
                 # Energy concentration in top frequencies
-                sorted_energy = np.sort(spectrogram.flatten() ** 2)[::-1]
+                sorted_energy = np.sort(spectrogram_real.flatten() ** 2)[::-1]
                 top_10_percent = int(len(sorted_energy) * 0.1)
                 if top_10_percent > 0:
                     energy_concentration = np.sum(sorted_energy[:top_10_percent]) / total_energy

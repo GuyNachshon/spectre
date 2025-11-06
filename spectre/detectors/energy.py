@@ -41,14 +41,20 @@ class EnergyDetector:
         """
         features = {}
         
-        # L1, L2, Frobenius norms
+        # L1, L2 norms (work for any dimension)
         l1_norm = np.linalg.norm(array, ord=1)
         l2_norm = np.linalg.norm(array, ord=2)
-        frobenius_norm = np.linalg.norm(array, ord='fro')
         
         features["energy.l1"] = float(l1_norm)
         features["energy.l2"] = float(l2_norm)
-        features["energy.frobenius"] = float(frobenius_norm)
+        
+        # Frobenius norm (only for 2D+ arrays, same as L2 for 1D)
+        if array.ndim >= 2:
+            frobenius_norm = np.linalg.norm(array, ord='fro')
+            features["energy.frobenius"] = float(frobenius_norm)
+        else:
+            # For 1D arrays, Frobenius norm is the same as L2 norm
+            features["energy.frobenius"] = float(l2_norm)
         
         # Normalized norms (per element)
         num_elements = array.size

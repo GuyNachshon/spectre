@@ -46,6 +46,10 @@ class DistributionDetector:
         if len(array_flat) < 10:
             return {}
         
+        # Handle complex arrays by taking real part
+        if np.iscomplexobj(array_flat):
+            array_flat = np.real(array_flat)
+        
         features = {}
         
         # Basic statistics
@@ -60,7 +64,9 @@ class DistributionDetector:
             features["distribution.kurtosis"] = float(kurtosis(array_flat))
         
         # Entropy (discretized)
-        hist, _ = np.histogram(array_flat, bins=64, density=True)
+        # Handle complex arrays by taking real part
+        array_flat_real = np.real(array_flat) if np.iscomplexobj(array_flat) else array_flat
+        hist, _ = np.histogram(array_flat_real, bins=64, density=True)
         hist = hist / (np.sum(hist) + 1e-10)
         hist = hist[hist > 0]
         if len(hist) > 0:
@@ -68,8 +74,10 @@ class DistributionDetector:
         
         # KLD to Gaussian
         if std > 0:
-            gaussian_samples = np.random.normal(mean, std, size=len(array_flat))
-            hist_data, _ = np.histogram(array_flat, bins=64, density=True)
+            # Handle complex arrays
+            array_flat_real = np.real(array_flat) if np.iscomplexobj(array_flat) else array_flat
+            gaussian_samples = np.random.normal(mean, std, size=len(array_flat_real))
+            hist_data, _ = np.histogram(array_flat_real, bins=64, density=True)
             hist_gauss, _ = np.histogram(gaussian_samples, bins=64, density=True)
             
             hist_data = hist_data / (np.sum(hist_data) + 1e-10)
@@ -80,8 +88,10 @@ class DistributionDetector:
         
         # KLD to Laplace
         if std > 0:
-            laplace_samples = np.random.laplace(mean, std / np.sqrt(2), size=len(array_flat))
-            hist_data, _ = np.histogram(array_flat, bins=64, density=True)
+            # Handle complex arrays
+            array_flat_real = np.real(array_flat) if np.iscomplexobj(array_flat) else array_flat
+            laplace_samples = np.random.laplace(mean, std / np.sqrt(2), size=len(array_flat_real))
+            hist_data, _ = np.histogram(array_flat_real, bins=64, density=True)
             hist_laplace, _ = np.histogram(laplace_samples, bins=64, density=True)
             
             hist_data = hist_data / (np.sum(hist_data) + 1e-10)
