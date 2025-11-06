@@ -48,7 +48,7 @@ class SpectralDetector:
         layer_idx: Optional[int]
     ) -> Dict[str, float]:
         """
-        Extract spectral features from tensor.
+        Extract spectral features using SVD.
         
         Args:
             array: Weight tensor
@@ -59,6 +59,10 @@ class SpectralDetector:
         Returns:
             Dictionary of spectral features
         """
+        # Skip very large tensors (>10M elements) to avoid extremely slow SVD
+        if array.size > 10_000_000:
+            return {}
+        
         if array.ndim < 2:
             # Skip 1D tensors (biases, layer norms)
             return {}

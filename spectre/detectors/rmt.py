@@ -76,6 +76,10 @@ class RmtDetector:
         if array.ndim < 2:
             return {}
         
+        # Skip very large tensors (>5M elements) to avoid extremely slow eigenvalue computation
+        if array.size > 5_000_000:
+            return {}
+        
         # Flatten to 2D if needed
         if array.ndim > 2:
             array = array.reshape(array.shape[0], -1)

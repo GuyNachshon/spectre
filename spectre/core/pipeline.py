@@ -225,12 +225,18 @@ class Pipeline:
             return
         
         print(f"Processing {len(tensors)} tensors with {len(self.detectors)} detectors")
+        import time
+        
         for tensor_dict in tqdm(tensors, desc="Extracting features"):
             name = tensor_dict["name"]
             array = tensor_dict["array"]
             role = tensor_dict["role"]
             layer_idx = tensor_dict["layer_idx"]
             shape = tensor_dict["shape"]
+            
+            # Log tensor info for debugging slow tensors
+            tensor_size = array.size
+            tensor_shape_str = "x".join(map(str, shape))
             
             # Create TensorFeatures
             tf = TensorFeatures(
@@ -240,15 +246,22 @@ class Pipeline:
                 shape=shape,
             )
             
-            # Run all detectors
+            # Run all detectors with timing
             for detector_name, detector in self.detectors.items():
                 try:
+                    start_time = time.time()
                     features = detector.extract(array, name, role, layer_idx)
+                    elapsed = time.time() - start_time
+                    
+                    # Log slow detectors (>5 seconds) - helps identify bottlenecks
+                    if elapsed > 5.0:
+                        print(f"\n  ⚠ Slow: {detector_name} on {name} ({tensor_shape_str}, {tensor_size:,} elements) took {elapsed:.1f}s")
+                    
                     if features:
                         tf.features.update(features)
                 except Exception as e:
                     # Log error but continue
-                    print(f"Warning: Detector {detector_name} failed for {name}: {e}")
+                    print(f"\n  ⚠ Warning: Detector {detector_name} failed for {name} ({tensor_shape_str}): {e}")
                     import traceback
                     traceback.print_exc()
             

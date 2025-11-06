@@ -90,7 +90,8 @@ class SequenceDetector:
                     features[f"sequence.{key}.last_change"] = float(change_points[-1] / len(sequence))
                 
                 # Matrix profile (if stumpy available)
-                if STUMPY_AVAILABLE and len(sequence) >= 10:
+                # Skip for very long sequences (>1000) as stumpy can be extremely slow
+                if STUMPY_AVAILABLE and len(sequence) >= 10 and len(sequence) <= 1000:
                     try:
                         mp = stumpy.stump(sequence, m=min(5, len(sequence) // 2))
                         if len(mp) > 0:
